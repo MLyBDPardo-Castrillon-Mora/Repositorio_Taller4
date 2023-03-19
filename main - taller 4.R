@@ -173,4 +173,4 @@ export <- select(export, id, name)
 export$name <- ifelse(export$name==0, "Petro", export$name)
 export$name <- ifelse(export$name==1, "Lopez", export$name)
 export$name <- ifelse(export$name==2, "Uribe", export$name)
-
+write.csv(export, "prueba.csv", row.names=FALSE)
