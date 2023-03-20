@@ -129,7 +129,7 @@ dim(tf_idf)
 columnas_seleccionadas <- colSums(tf_idf) %>%
   data.frame() %>%
   arrange(desc(.)) %>%
-  head(500) %>%
+  head(3000) %>%
   rownames()
 
 tf_redu <- tf_idf %>%
@@ -150,7 +150,9 @@ Y <- ifelse(Y=="Uribe", 2, Y)
 Y <- to_categorical(Y)
 Y <- as.matrix(Y)
 
-save(X_train, X_test, Y, file = "modelo.RData")
+save(X_train, X_test, Y, file = "modelo_3.RData")
+
+## NOS VAMOS A COLAB :)
 
 # EXPORT =======================================================================
 
@@ -158,13 +160,31 @@ drows <- c(drows)
 drows_test <- drows[drows > 9349]
 
 test_import <- data_clean[data_clean$rnum > 9349, ]
+# Repetir train
+
+aux <- test
+aux$name <- rep(NA, nrow(aux))
+aux <- aux %>% select(id, name, text)
+train <- rbind(train_true, aux)
+train$text <- stri_trans_general(str = train$text, id = "Latin-ASCII")
+train$text <- gsub('[^A-Za-z0-9 ]+', ' ', train$text)
+train$text <- tolower(train$text)
+train$text <- gsub('\\s+', ' ', train$text)
+train$text <- gsub('\\d+', ' ', train$text)
+train$text <- trimws(train$text)
+
+# Arreglo de base de datos
+
+train <- train %>%
+  mutate(rnum = row_number())
+
+#Finalizar preparacion
 random <- train[train$rnum > 9349, ]
 test_random <- random[random$rnum %in% drows_test, ]
 test_random$name <- ifelse(is.na(test_random$name), sample(0:2, sum(is.na(test_random$name)), replace = TRUE), 0)
 
 # Traer datos de Collab
-
-load("import2.RData")
+load("import4.RData")
 test_import$name <- import
 export <- rbind(test_import, test_random)
 ordenar <- order(export$rnum)
@@ -173,4 +193,4 @@ export <- select(export, id, name)
 export$name <- ifelse(export$name==0, "Petro", export$name)
 export$name <- ifelse(export$name==1, "Lopez", export$name)
 export$name <- ifelse(export$name==2, "Uribe", export$name)
-write.csv(export, "prueba.csv", row.names=FALSE)
+write.csv(export, "prueba_fernando.csv", row.names=FALSE)
