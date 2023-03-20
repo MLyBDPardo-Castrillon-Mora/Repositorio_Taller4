@@ -22,8 +22,8 @@ p_load(tidyverse, # Manipular dataframes
        syuzhet
 ) 
 
-train_true <- read.csv ("C:/BigDataLaura/Repositorio_Taller4/train.csv")
-test <- read.csv ("C:/BigDataLaura/Repositorio_Taller4/test.csv")
+train_true <- read.csv ("./Stores/train.csv")
+test <- read.csv ("./Stores/test.csv")
 head (train,1)
 
 # 9349 observaciones en train, 1500 en tes
@@ -37,6 +37,20 @@ aux <- test
 aux$name <- rep(NA, nrow(aux))
 aux <- aux %>% select(id, name, text)
 train <- rbind(train_true, aux)
+
+#gráfico var respuesta
+#table(train_true)
+#df <- data.frame("Autor"=c("Lopez","Petro","Uribe"),
+                 "numero" = c(3470,2877,3002))
+#library(ggplot2)
+#ggplot(df,aes(x="", y=numero,fill=Autor))+
+#  geom_bar(stat = "identity",
+#           color="white")+
+#  geom_text(aes(label=paste(round(numero*100/9349,2),"%")),
+#            position=position_stack(vjust=0.5),color="white",size=6)+
+#  coord_polar(theta = "y")+
+#  scale_fill_manual(values=c("salmon","steelblue","orange"))+
+#  theme_void()
 
 # Limpieza inicial del texto
 train$text <- stri_trans_general(str = train$text, id = "Latin-ASCII")
@@ -164,7 +178,7 @@ test_random$name <- ifelse(is.na(test_random$name), sample(0:2, sum(is.na(test_r
 
 # Traer datos de Collab
 
-load("import2.RData")
+load("import_m4.RData")
 test_import$name <- import
 export <- rbind(test_import, test_random)
 ordenar <- order(export$rnum)
@@ -173,4 +187,4 @@ export <- select(export, id, name)
 export$name <- ifelse(export$name==0, "Petro", export$name)
 export$name <- ifelse(export$name==1, "Lopez", export$name)
 export$name <- ifelse(export$name==2, "Uribe", export$name)
-write.csv(export, "prueba.csv", row.names=FALSE)
+write.csv(export, "pruebam4.csv", row.names=FALSE)
