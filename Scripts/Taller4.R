@@ -38,20 +38,6 @@ aux$name <- rep(NA, nrow(aux))
 aux <- aux %>% select(id, name, text)
 train <- rbind(train_true, aux)
 
-#gráfico var respuesta
-#table(train_true)
-#df <- data.frame("Autor"=c("Lopez","Petro","Uribe"),
-                 "numero" = c(3470,2877,3002))
-#library(ggplot2)
-#ggplot(df,aes(x="", y=numero,fill=Autor))+
-#  geom_bar(stat = "identity",
-#           color="white")+
-#  geom_text(aes(label=paste(round(numero*100/9349,2),"%")),
-#            position=position_stack(vjust=0.5),color="white",size=6)+
-#  coord_polar(theta = "y")+
-#  scale_fill_manual(values=c("salmon","steelblue","orange"))+
-#  theme_void()
-
 # Limpieza inicial del texto
 train$text <- stri_trans_general(str = train$text, id = "Latin-ASCII")
 train$text <- gsub('[^A-Za-z0-9 ]+', ' ', train$text)
@@ -143,7 +129,7 @@ dim(tf_idf)
 columnas_seleccionadas <- colSums(tf_idf) %>%
   data.frame() %>%
   arrange(desc(.)) %>%
-  head(500) %>%
+  head(3000) %>%
   rownames()
 
 tf_redu <- tf_idf %>%
@@ -166,18 +152,38 @@ Y <- as.matrix(Y)
 
 save(X_train, X_test, Y, file = "modelo.RData")
 
+## NOS VAMOS A COLAB :)
+
 # EXPORT =======================================================================
 
 drows <- c(drows)
 drows_test <- drows[drows > 9349]
 
 test_import <- data_clean[data_clean$rnum > 9349, ]
+# Repetir train
+
+aux <- test
+aux$name <- rep(NA, nrow(aux))
+aux <- aux %>% select(id, name, text)
+train <- rbind(train_true, aux)
+train$text <- stri_trans_general(str = train$text, id = "Latin-ASCII")
+train$text <- gsub('[^A-Za-z0-9 ]+', ' ', train$text)
+train$text <- tolower(train$text)
+train$text <- gsub('\\s+', ' ', train$text)
+train$text <- gsub('\\d+', ' ', train$text)
+train$text <- trimws(train$text)
+
+# Arreglo de base de datos
+
+train <- train %>%
+  mutate(rnum = row_number())
+
+#Finalizar preparacion
 random <- train[train$rnum > 9349, ]
 test_random <- random[random$rnum %in% drows_test, ]
 test_random$name <- ifelse(is.na(test_random$name), sample(0:2, sum(is.na(test_random$name)), replace = TRUE), 0)
 
 # Traer datos de Collab
-
 load("import_m4.RData")
 test_import$name <- import
 export <- rbind(test_import, test_random)
@@ -187,4 +193,4 @@ export <- select(export, id, name)
 export$name <- ifelse(export$name==0, "Petro", export$name)
 export$name <- ifelse(export$name==1, "Lopez", export$name)
 export$name <- ifelse(export$name==2, "Uribe", export$name)
-write.csv(export, "pruebam4.csv", row.names=FALSE)
+write.csv(export, "prueba_fernando.csv", row.names=FALSE)
